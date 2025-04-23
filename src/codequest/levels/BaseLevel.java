@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -18,12 +17,16 @@ import codequest.GameSprite;
 
 /**
  * BaseLevel - Common functionality for all level types
+ * Enhanced with proper layering management
  */
 public abstract class BaseLevel implements Level {
     
     protected GameManager gameManager;
     protected GameSprite sprite;
     protected Pane gamePane;
+    protected Pane backgroundLayer; // For background elements like goal areas
+    protected Pane spriteLayer;     // For the player character 
+    protected Pane foregroundLayer; // For UI elements on top
     protected TextArea outputArea;
     protected TextArea codeArea;
     protected boolean levelCompleted = false;
@@ -42,20 +45,43 @@ public abstract class BaseLevel implements Level {
         VBox topBox = createTopSection();
         root.setTop(topBox);
         
-        // Center - Game area
-        gamePane = new Pane();
-        gamePane.setPrefSize(600, 400);
-        gamePane.setStyle("-fx-background-color: #ecf0f1;");
+        // Center - Game area with layered panes
+        setupGameLayers();
         root.setCenter(gamePane);
         
-        // Initialize the sprite
-        sprite = new GameSprite(gamePane);
+        // Initialize the sprite on the sprite layer
+        sprite = new GameSprite(spriteLayer);
         
         // Bottom - Code input and output
         VBox bottomBox = createBottomSection();
         root.setBottom(bottomBox);
         
         return new Scene(root, 800, 700);
+    }
+    
+    /**
+     * Setup the game pane with proper layering
+     */
+    private void setupGameLayers() {
+        // Main container pane - will contain all layers
+        gamePane = new Pane();
+        gamePane.setPrefSize(600, 400);
+        gamePane.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Background layer - for terrain, goal areas, etc.
+        backgroundLayer = new Pane();
+        backgroundLayer.setPrefSize(600, 400);
+        
+        // Sprite layer - for the player character
+        spriteLayer = new Pane();
+        spriteLayer.setPrefSize(600, 400);
+        
+        // Foreground layer - for UI elements, text, etc.
+        foregroundLayer = new Pane();
+        foregroundLayer.setPrefSize(600, 400);
+        
+        // Add layers in order (bottom to top)
+        gamePane.getChildren().addAll(backgroundLayer, spriteLayer, foregroundLayer);
     }
     
     protected VBox createTopSection() {
@@ -120,8 +146,11 @@ public abstract class BaseLevel implements Level {
     }
     
     protected void resetLevel() {
+        // Clear layers
+        spriteLayer.getChildren().clear();
+        
         // Reset game state
-        sprite = new GameSprite(gamePane);
+        sprite = new GameSprite(spriteLayer);
         levelCompleted = false;
         
         // Clear output and reset code
@@ -145,7 +174,7 @@ public abstract class BaseLevel implements Level {
             nextLevelButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
             nextLevelButton.setOnAction(e -> gameManager.nextLevel());
             
-            // Add the button to the game pane
+            // Add the button to the foreground layer
             HBox buttonBox = new HBox(nextLevelButton);
             buttonBox.setAlignment(Pos.CENTER);
             buttonBox.setPadding(new Insets(10));
@@ -153,7 +182,7 @@ public abstract class BaseLevel implements Level {
             buttonBox.setLayoutY(200);
             buttonBox.setStyle("-fx-background-color: rgba(44, 62, 80, 0.8); -fx-padding: 20px;");
             
-            gamePane.getChildren().add(buttonBox);
+            foregroundLayer.getChildren().add(buttonBox);
         }
     }
     

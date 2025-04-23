@@ -7,6 +7,7 @@ import javafx.scene.shape.Rectangle;
 
 /**
  * CommandsLevel - Level 1: Learning basic commands
+ * Updated to use proper layering
  */
 public class CommandsLevel extends BaseLevel {
     
@@ -56,14 +57,15 @@ public class CommandsLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
         
-        // Add goal area (green rectangle)
+        // Add goal area (green rectangle) to the BACKGROUND layer
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(50);
-        goal.setY(350);
+        goal.setX(100);
+        goal.setY(200);
         goal.setOpacity(0.5);
         
-        gamePane.getChildren().add(goal);
+        // Add to BACKGROUND layer instead of gamePane
+        backgroundLayer.getChildren().add(goal);
         
         appendToOutput("Welcome to Level 1: Commands!\nUse moveLeft() and jump() to reach the green area.");
         

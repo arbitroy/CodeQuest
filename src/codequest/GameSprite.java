@@ -4,10 +4,15 @@ import javafx.animation.TranslateTransition;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.Group;
 import javafx.util.Duration;
 
 /**
  * GameSprite - Represents the player's character in the game
+ * Updated to work with the layered pane system
  */
 public class GameSprite {
     
@@ -15,7 +20,7 @@ public class GameSprite {
     private double xPos;
     private double yPos;
     private int speed = 5;
-    private Pane gamePane;
+    private Pane spriteLayer; // Changed to be sprite layer specifically
     
     // Animation images
     private Image idleImage;
@@ -30,15 +35,18 @@ public class GameSprite {
     private int frameCounter = 0;
     
     /**
-     * Creates a new sprite on the given pane
+     * Creates a new sprite on the given sprite layer
      */
-    public GameSprite(Pane gamePane) {
-        this.gamePane = gamePane;
+    public GameSprite(Pane spriteLayer) {
+        this.spriteLayer = spriteLayer;
         
         // Initialize sprite view
         spriteView = new ImageView();
         spriteView.setFitWidth(80);
         spriteView.setFitHeight(48);
+        
+        // Ensure sprite has higher z-index
+        spriteView.setViewOrder(-1);  // Lower viewOrder means higher z-index
         
         // Load all sprite images
         try {
@@ -66,18 +74,61 @@ public class GameSprite {
         } catch (Exception e) {
             // If images can't be loaded, create a colored rectangle as fallback
             System.out.println("Error loading sprite images: " + e.getMessage());
-            spriteView.setStyle("-fx-background-color: #3498db;");
-            spriteView.setFitWidth(40);
-            spriteView.setFitHeight(40);
+            
+            // Create a more visible fallback sprite
+            Group fallbackSprite = createFallbackSprite();
+            
+            // Add the fallback sprite to the sprite layer
+            spriteLayer.getChildren().add(fallbackSprite);
+            
+            // Set properties for positioning
+            fallbackSprite.setLayoutX(xPos);
+            fallbackSprite.setLayoutY(yPos);
+            
+            // Return early since we're using the fallback
+            xPos = 50;
+            yPos = 300;
+            return;
         }
         
         // Initial position
-        xPos = 50;
-        yPos = 300;
+        xPos = 1;
+        yPos = 200;
         updatePosition();
         
-        // Add to the game pane
-        gamePane.getChildren().add(spriteView);
+        // Add to the sprite layer
+        spriteLayer.getChildren().add(spriteView);
+    }
+    
+    /**
+     * Create a fallback sprite using JavaFX shapes
+     */
+    private Group createFallbackSprite() {
+        Group character = new Group();
+        character.setViewOrder(-1); // Ensure it's on top
+        
+        // Body (blue rectangle)
+        Rectangle body = new Rectangle(40, 40);
+        body.setFill(Color.DODGERBLUE);
+        body.setArcWidth(10);
+        body.setArcHeight(10);
+        
+        // Head (circle)
+        Circle head = new Circle(20, 10, 15);
+        head.setFill(Color.LIGHTBLUE);
+        
+        // Eyes
+        Circle leftEye = new Circle(15, 8, 3);
+        leftEye.setFill(Color.WHITE);
+        Circle rightEye = new Circle(25, 8, 3);
+        rightEye.setFill(Color.WHITE);
+        
+        // Pupils
+        Circle leftPupil = new Circle(15, 8, 1.5);
+        Circle rightPupil = new Circle(25, 8, 1.5);
+        
+        character.getChildren().addAll(body, head, leftEye, rightEye, leftPupil, rightPupil);
+        return character;
     }
     
     /**
@@ -97,7 +148,7 @@ public class GameSprite {
      * Move the sprite right
      */
     public void moveRight() {
-        if (xPos < gamePane.getWidth() - spriteView.getFitWidth()) {
+        if (xPos < spriteLayer.getWidth() - spriteView.getFitWidth()) {
             xPos += speed;
             
             // Set sprite state to running right
@@ -148,20 +199,18 @@ public class GameSprite {
      */
     public void shoot() {
         // Create a projectile
-        ImageView projectile = new ImageView();
-        projectile.setFitWidth(10);
-        projectile.setFitHeight(5);
-        projectile.setStyle("-fx-background-color: red;");
+        Rectangle projectile = new Rectangle(10, 5);
+        projectile.setFill(Color.RED);
         projectile.setLayoutX(xPos + spriteView.getFitWidth());
         projectile.setLayoutY(yPos + spriteView.getFitHeight()/2);
         
-        // Add to game pane
-        gamePane.getChildren().add(projectile);
+        // Add to sprite layer
+        spriteLayer.getChildren().add(projectile);
         
         // Animate projectile
         TranslateTransition shoot = new TranslateTransition(Duration.millis(500), projectile);
         shoot.setByX(300);
-        shoot.setOnFinished(e -> gamePane.getChildren().remove(projectile));
+        shoot.setOnFinished(e -> spriteLayer.getChildren().remove(projectile));
         shoot.play();
     }
     
@@ -209,6 +258,9 @@ public class GameSprite {
      * Animate movement of the sprite
      */
     private void animateMove() {
+        // Skip if using fallback sprite (no spriteView)
+        if (spriteView == null) return;
+        
         // Move the sprite
         TranslateTransition move = new TranslateTransition(Duration.millis(100), spriteView);
         move.setToX(xPos);
@@ -230,14 +282,19 @@ public class GameSprite {
      * Update the sprite's position immediately
      */
     private void updatePosition() {
-        spriteView.setLayoutX(xPos);
-        spriteView.setLayoutY(yPos);
+        if (spriteView != null) {
+            spriteView.setLayoutX(xPos);
+            spriteView.setLayoutY(yPos);
+        }
     }
     
     /**
      * Update the sprite's animation based on current state
      */
     private void updateAnimation() {
+        // Skip if using fallback sprite (no spriteView)
+        if (spriteView == null) return;
+        
         // Advance frame counter
         frameCounter++;
         
