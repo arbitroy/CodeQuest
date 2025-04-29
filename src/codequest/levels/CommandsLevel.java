@@ -4,10 +4,12 @@ import codequest.GameManager;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 
 /**
  * CommandsLevel - Level 1: Learning basic commands
- * Updated to use proper layering
+ * With logically correct goal positioning
  */
 public class CommandsLevel extends BaseLevel {
     
@@ -39,9 +41,7 @@ public class CommandsLevel extends BaseLevel {
     @Override
     protected String getStarterCode() {
         return "// Type your commands here\n" +
-               "// Try using moveLeft() and jump()\n" +
-               "\n" +
-               "\n";
+               "// Try using moveLeft() and jump()\n";
     }
     
     @Override
@@ -57,16 +57,40 @@ public class CommandsLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
         
-        // Add goal area (green rectangle) to the BACKGROUND layer
-        goal = new Rectangle(100, 50);
-        goal.setFill(Color.GREEN);
-        goal.setX(100);
-        goal.setY(200);
-        goal.setOpacity(0.5);
+        // Clear any existing background elements first
+        backgroundLayer.getChildren().clear();
         
-        // Add to BACKGROUND layer instead of gamePane
+        // Add a dark blue background
+        Rectangle background = new Rectangle(0, 0, gamePane.getWidth(), gamePane.getHeight());
+        background.setFill(Color.web("#2c3e50")); // Dark blue background
+        backgroundLayer.getChildren().add(background);
+        
+        // Goal area positioned where moveLeft() will actually take the sprite
+        // The debug output shows sprite goes to X:0.0, Y:200.0 after moveLeft()
+        goal = new Rectangle(150, 100);
+        goal.setFill(Color.LIME); // Bright green
+        goal.setStroke(Color.WHITE); // White border
+        goal.setStrokeWidth(3);
+        goal.setX(0); // Position where sprite will be after moveLeft()
+        goal.setY(150); // Position where it will overlap with the sprite
+        goal.setOpacity(0.7);
+        
+        // Add the goal
         backgroundLayer.getChildren().add(goal);
         
+        // Add a label for clarity
+        Text goalLabel = new Text("GOAL");
+        goalLabel.setFill(Color.WHITE);
+        goalLabel.setX(goal.getX() + 50);
+        goalLabel.setY(goal.getY() + 50);
+        goalLabel.setStyle("-fx-font-weight: bold;");
+        
+        // Add label to background
+        backgroundLayer.getChildren().add(goalLabel);
+        
+        // Debug message
+        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY() + 
+                      " with width:" + goal.getWidth() + ", height:" + goal.getHeight());
         appendToOutput("Welcome to Level 1: Commands!\nUse moveLeft() and jump() to reach the green area.");
         
         return scene;
@@ -92,22 +116,38 @@ public class CommandsLevel extends BaseLevel {
                 appendToOutput("Executing: moveLeft()");
                 sprite.moveLeft();
                 movedLeft = true;
+                
+                // Debug position
+                appendToOutput("DEBUG: Sprite position after moveLeft: X:" + sprite.getXPos() + ", Y:" + sprite.getYPos());
             } else if (line.matches("jump\\(\\);.*")) {
                 appendToOutput("Executing: jump()");
                 sprite.jump();
                 jumped = true;
+                
+                // Debug position
+                appendToOutput("DEBUG: Sprite position after jump: X:" + sprite.getXPos() + ", Y:" + sprite.getYPos());
             } else {
                 appendToOutput("Unrecognized command: " + line);
             }
         }
+        
+        // Debug collision check
+        boolean inGoalX = sprite.getXPos() >= goal.getX() && sprite.getXPos() <= goal.getX() + goal.getWidth();
+        boolean inGoalY = sprite.getYPos() >= goal.getY() && sprite.getYPos() <= goal.getY() + goal.getHeight();
+        appendToOutput("DEBUG: In goal area? X:" + inGoalX + ", Y:" + inGoalY + 
+                      " (Needed: moveLeft=" + movedLeft + ", jumped=" + jumped + ")");
         
         // Check if the level is completed
         checkLevelCompletion();
     }
     
     private void checkLevelCompletion() {
-        // Check if the sprite is in the goal area
-        if (sprite.getXPos() <= 100 && movedLeft && jumped) {
+        // Check if the sprite is in the goal area and the required commands were used
+        if (sprite.getXPos() >= goal.getX() && 
+            sprite.getXPos() <= goal.getX() + goal.getWidth() &&
+            sprite.getYPos() >= goal.getY() && 
+            sprite.getYPos() <= goal.getY() + goal.getHeight() &&
+            movedLeft && jumped) {
             completeLevel();
         }
     }

@@ -80,42 +80,44 @@ public class LoopsLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
         
-        // Add goal area (green rectangle)
+        // Add goal area
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(300);
+        goal.setX(500); // Right side for moveRight
         goal.setY(200);
-        goal.setOpacity(0.5);
+        goal.setOpacity(0.8);
         
-        // Add targets
+        // Add targets as ImageView objects to match the expected List<ImageView> type
         for (int i = 0; i < 3; i++) {
+            // Create ImageView instead of Rectangle to match List type
             ImageView target = new ImageView();
             target.setFitWidth(30);
             target.setFitHeight(30);
-            target.setLayoutX(350);
-            target.setLayoutY(150 + (i * 80));
-            target.setStyle("-fx-background-color: red;");
+            target.setLayoutX(200 + (i * 100)); // Spread across the visible area
+            target.setLayoutY(100 + (i * 50));  // At different heights
             
-            // Create a simple target appearance
-            Rectangle targetRect = new Rectangle(30, 30);
-            targetRect.setFill(Color.RED);
-            targetRect.setX(200);
-            targetRect.setY(100 + (i * 50));
+            // Create a red rectangle as a placeholder for the target image
+            Rectangle targetVisual = new Rectangle(30, 30);
+            targetVisual.setFill(Color.RED);
+            targetVisual.setX(200 + (i * 100));
+            targetVisual.setY(100 + (i * 50));
             
-            backgroundLayer.getChildren().add(targetRect);
-            targets.add(target);
+            backgroundLayer.getChildren().add(targetVisual);
+            spriteLayer.getChildren().add(target);
+            targets.add(target); // Now this works because target is an ImageView
         }
         
         // Add status display
         Text statusText = new Text("Targets Hit: 0/3");
         statusText.setX(20);
         statusText.setY(50);
-        statusText.setFill(Color.BLACK);
+        statusText.setFill(Color.WHITE);
         statusText.setFont(Font.font("Arial", 14));
         
         backgroundLayer.getChildren().add(goal);
         foregroundLayer.getChildren().add(statusText);
         
+        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY());
         appendToOutput("Welcome to Level 4: Loops!\nUse a for loop to shoot at all the targets.");
         
         return scene;
@@ -212,7 +214,12 @@ public class LoopsLevel extends BaseLevel {
     
     private void checkLevelCompletion() {
         // Check if all targets are hit and the sprite reached the goal
-        if (targetsHit >= 3 && sprite.getXPos() >= 500 && usedLoop) {
+        if (targetsHit >= 3 && 
+            sprite.getXPos() >= goal.getX() && 
+            sprite.getXPos() <= goal.getX() + goal.getWidth() &&
+            sprite.getYPos() >= goal.getY() && 
+            sprite.getYPos() <= goal.getY() + goal.getHeight() && 
+            usedLoop) {
             completeLevel();
         }
     }

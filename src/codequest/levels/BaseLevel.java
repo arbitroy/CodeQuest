@@ -12,12 +12,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.paint.Color;
 import codequest.GameManager;
 import codequest.GameSprite;
 
 /**
  * BaseLevel - Common functionality for all level types
- * Enhanced with proper layering management
+ * Fixed layer management while keeping original visual style
  */
 public abstract class BaseLevel implements Level {
     
@@ -31,15 +32,20 @@ public abstract class BaseLevel implements Level {
     protected TextArea codeArea;
     protected boolean levelCompleted = false;
     
+    // Standard dimensions for elementss
+    protected static final int GAME_WIDTH = 800;
+    protected static final int GAME_HEIGHT = 400;
+    
     public BaseLevel(GameManager gameManager) {
         this.gameManager = gameManager;
     }
     
     @Override
     public Scene createLevelScene() {
+        // Create the main layout
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
-        root.setStyle("-fx-background-color: #2c3e50;");
+        root.setStyle("-fx-background-color: #1e1e2e;"); // Dark background to match screenshot
         
         // Top - Level title and instructions
         VBox topBox = createTopSection();
@@ -49,12 +55,12 @@ public abstract class BaseLevel implements Level {
         setupGameLayers();
         root.setCenter(gamePane);
         
-        // Initialize the sprite on the sprite layer
-        sprite = new GameSprite(spriteLayer);
-        
         // Bottom - Code input and output
         VBox bottomBox = createBottomSection();
         root.setBottom(bottomBox);
+        
+        // Initialize the sprite on the sprite layer - positioned to match screenshot
+        sprite = new GameSprite(spriteLayer);
         
         return new Scene(root, 800, 700);
     }
@@ -65,20 +71,21 @@ public abstract class BaseLevel implements Level {
     private void setupGameLayers() {
         // Main container pane - will contain all layers
         gamePane = new Pane();
-        gamePane.setPrefSize(600, 400);
-        gamePane.setStyle("-fx-background-color: #ecf0f1;");
+        gamePane.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        gamePane.setMaxHeight(GAME_HEIGHT);
+        gamePane.setStyle("-fx-background-color: #2c3e50;"); // Dark blue background
         
         // Background layer - for terrain, goal areas, etc.
         backgroundLayer = new Pane();
-        backgroundLayer.setPrefSize(600, 400);
+        backgroundLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         
         // Sprite layer - for the player character
         spriteLayer = new Pane();
-        spriteLayer.setPrefSize(600, 400);
+        spriteLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         
         // Foreground layer - for UI elements, text, etc.
         foregroundLayer = new Pane();
-        foregroundLayer.setPrefSize(600, 400);
+        foregroundLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         
         // Add layers in order (bottom to top)
         gamePane.getChildren().addAll(backgroundLayer, spriteLayer, foregroundLayer);
@@ -96,6 +103,7 @@ public abstract class BaseLevel implements Level {
         Text instructions = new Text(getLevelInstructions());
         instructions.setFont(Font.font("Arial", 14));
         instructions.setStyle("-fx-fill: #ecf0f1;");
+        instructions.setWrappingWidth(780);
         
         topBox.getChildren().addAll(levelTitle, instructions);
         return topBox;
@@ -105,7 +113,7 @@ public abstract class BaseLevel implements Level {
         VBox bottomBox = new VBox(10);
         bottomBox.setPadding(new Insets(10));
         
-        // Code area
+        // Code area - styling to match screenshot
         Label codeLabel = new Label("Your Code:");
         codeLabel.setStyle("-fx-text-fill: white;");
         
@@ -113,33 +121,37 @@ public abstract class BaseLevel implements Level {
         codeArea.setPrefHeight(100);
         codeArea.setPromptText("Type your code here...");
         codeArea.setText(getStarterCode());
+        codeArea.setStyle("-fx-control-inner-background: #2d3436; -fx-text-fill: #dfe6e9;");
         
-        // Buttons
+        // Buttons - styling to match screenshot
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
         
         Button runButton = new Button("Run Code");
-        runButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
+        runButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px;");
+        runButton.setPrefSize(120, 40);
         runButton.setOnAction(e -> processCommand(codeArea.getText()));
         
-        Button resetButton = new Button("Reset");
-        resetButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        Button resetButton = new Button("Reset Level");
+        resetButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px;");
+        resetButton.setPrefSize(120, 40);
         resetButton.setOnAction(e -> resetLevel());
         
         Button helpButton = new Button("Help");
-        helpButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        helpButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px;");
+        helpButton.setPrefSize(120, 40);
         helpButton.setOnAction(e -> showHelp());
         
         buttonBox.getChildren().addAll(runButton, resetButton, helpButton);
         
-        // Output area
+        // Output area - styling to match screenshot
         Label outputLabel = new Label("Output:");
         outputLabel.setStyle("-fx-text-fill: white;");
         
         outputArea = new TextArea();
         outputArea.setPrefHeight(100);
         outputArea.setEditable(false);
-        outputArea.setStyle("-fx-control-inner-background: #34495e; -fx-text-fill: #ecf0f1;");
+        outputArea.setStyle("-fx-control-inner-background: #2d3436; -fx-text-fill: #8fbcbb;");
         
         bottomBox.getChildren().addAll(codeLabel, codeArea, buttonBox, outputLabel, outputArea);
         return bottomBox;
@@ -170,6 +182,7 @@ public abstract class BaseLevel implements Level {
             
             appendToOutput("\nCongratulations! Level completed!");
             
+            // Create a next level button
             Button nextLevelButton = new Button("Next Level");
             nextLevelButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
             nextLevelButton.setOnAction(e -> gameManager.nextLevel());
@@ -178,8 +191,8 @@ public abstract class BaseLevel implements Level {
             HBox buttonBox = new HBox(nextLevelButton);
             buttonBox.setAlignment(Pos.CENTER);
             buttonBox.setPadding(new Insets(10));
-            buttonBox.setLayoutX(250);
-            buttonBox.setLayoutY(200);
+            buttonBox.setLayoutX(GAME_WIDTH/2 - 75);
+            buttonBox.setLayoutY(GAME_HEIGHT/2 - 25);
             buttonBox.setStyle("-fx-background-color: rgba(44, 62, 80, 0.8); -fx-padding: 20px;");
             
             foregroundLayer.getChildren().add(buttonBox);
@@ -188,6 +201,8 @@ public abstract class BaseLevel implements Level {
     
     protected void appendToOutput(String text) {
         outputArea.appendText(text + "\n");
+        // Scroll to the bottom for better visibility
+        outputArea.positionCaret(outputArea.getText().length());
     }
     
     protected void showHelp() {

@@ -90,7 +90,6 @@ public class FreeRoamLevel extends BaseLevel {
                "   jump();\n\n" +
                "Combine these concepts to complete the challenge!";
     }
-    
     @Override
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
@@ -98,33 +97,28 @@ public class FreeRoamLevel extends BaseLevel {
         // Add goal area
         goal = new Rectangle(80, 80);
         goal.setFill(Color.GREEN);
-        goal.setX(400);
+        goal.setX(500); // Right side
         goal.setY(200);
-        goal.setOpacity(0.5);
+        goal.setOpacity(0.8);
         
         // Add obstacles
         for (int i = 0; i < 3; i++) {
             Rectangle obstacle = new Rectangle(30, 100);
             obstacle.setFill(Color.GRAY);
-            obstacle.setX(120 + (i * 80));
+            obstacle.setX(120 + (i * 150)); // Spread out for visibility
             obstacle.setY(200);
             obstacles.add(obstacle);
             backgroundLayer.getChildren().add(obstacle);
         }
         
-        // Add targets
+        // Add targets - making sure to use Rectangle since targets is List<Rectangle>
         for (int i = 0; i < totalTargets; i++) {
             Rectangle target = new Rectangle(25, 25);
             target.setFill(Color.RED);
             
-            // Position targets at different locations
-            if (i < 2) {
-            	target.setX(150 + (i * 80));
-                target.setY(100);
-            } else {
-            	 target.setX(150 + ((i-2) * 80));
-                 target.setY(300);
-            }
+            // Position targets at different visible locations
+            target.setX(150 + (i * 100));
+            target.setY(100 + ((i % 2) * 200));
             
             targets.add(target);
             backgroundLayer.getChildren().add(target);
@@ -136,53 +130,18 @@ public class FreeRoamLevel extends BaseLevel {
         enemy.setX(250);
         enemy.setY(200);
         spriteLayer.getChildren().add(enemy);
-        enemyNear = true;
         
         // Add status display
         Text statusText = new Text("Targets Hit: 0/" + totalTargets + " | Enemy Near: " + enemyNear + " | Speed: " + sprite.getSpeed());
         statusText.setX(20);
         statusText.setY(30);
-        statusText.setFill(Color.BLACK);
-        statusText.setFont(Font.font("Arial", 14));
+        statusText.setFill(Color.WHITE);
         
-        
-        // Add level info section
-        Rectangle infoBox = new Rectangle(150, 200);
-        infoBox.setFill(Color.LIGHTBLUE);
-        infoBox.setX(20);
-        infoBox.setY(50);
-        infoBox.setOpacity(0.7);
-        
-        Text infoTitle = new Text("Available Commands:");
-        infoTitle.setX(30);
-        infoTitle.setY(70);
-        infoTitle.setFont(Font.font("Arial", 12));
-        
-        Text infoText = new Text(
-            "moveLeft()\n" +
-            "moveRight()\n" +
-            "jump()\n" +
-            "shoot()\n" +
-            "moveBack()\n" +
-            "setSpeed(value)\n\n" +
-            "Variables:\n" +
-            "enemyNear = " + enemyNear
-        );
-        infoText.setX(30);
-        infoText.setY(90);
-        infoText.setFont(Font.font("Arial", 10));
-        
-     // Move info elements to foreground:
         foregroundLayer.getChildren().add(statusText);
-        foregroundLayer.getChildren().add(infoBox);
-        foregroundLayer.getChildren().add(infoTitle);
-        foregroundLayer.getChildren().add(infoText);
-
-        // Add goal to background:
         backgroundLayer.getChildren().add(goal);
         
-        appendToOutput("Welcome to the Final Level: Free Roam Challenge!\n" +
-                      "Use all the concepts you've learned to complete this challenge.");
+        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY());
+        appendToOutput("Welcome to the Final Level: Free Roam Challenge!");
         
         return scene;
     }

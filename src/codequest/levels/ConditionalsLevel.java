@@ -82,12 +82,12 @@ public class ConditionalsLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
         
-        // Add goal area (green rectangle)
+        // Add goal area using existing UI style
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(300);
+        goal.setX(500); // Right side of screen for moveRight
         goal.setY(200);
-        goal.setOpacity(0.5);
+        goal.setOpacity(0.8);
         
         // Add enemy
         enemy = new ImageView();
@@ -101,7 +101,7 @@ public class ConditionalsLevel extends BaseLevel {
         Text statusText = new Text("Enemy Near: " + enemyNear);
         statusText.setX(20);
         statusText.setY(50);
-        statusText.setFill(Color.BLACK);
+        statusText.setFill(Color.WHITE);
         statusText.setFont(Font.font("Arial", 14));
         
         backgroundLayer.getChildren().add(goal);
@@ -111,6 +111,7 @@ public class ConditionalsLevel extends BaseLevel {
         // Set up enemy movement
         setupEnemyMovement();
         
+        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY());
         appendToOutput("Welcome to Level 3: Conditionals!\nUse an if statement to move back when the enemy is near.");
         
         return scene;
@@ -197,7 +198,11 @@ public class ConditionalsLevel extends BaseLevel {
     
     private void checkLevelCompletion(boolean handledEnemyCorrectly) {
         // Check if sprite reached the goal and handled the enemy correctly
-        if (sprite.getXPos() >= 500 && usedConditional && handledEnemyCorrectly) {
+        if (sprite.getXPos() >= goal.getX() && 
+            sprite.getXPos() <= goal.getX() + goal.getWidth() &&
+            sprite.getYPos() >= goal.getY() && 
+            sprite.getYPos() <= goal.getY() + goal.getHeight() && 
+            usedConditional && handledEnemyCorrectly) {
             completeLevel();
             
             // Stop the enemy timeline

@@ -12,15 +12,16 @@ import javafx.util.Duration;
 
 /**
  * GameSprite - Represents the player's character in the game
- * Updated to work with the layered pane system
+ * Fixed to ensure consistent positioning
  */
 public class GameSprite {
     
     private ImageView spriteView;
+    private Group fallbackSprite;
     private double xPos;
     private double yPos;
     private int speed = 5;
-    private Pane spriteLayer; // Changed to be sprite layer specifically
+    private Pane spriteLayer;
     
     // Animation images
     private Image idleImage;
@@ -33,6 +34,9 @@ public class GameSprite {
     private int currentFrame = 0;
     private final int FRAME_DELAY = 5;
     private int frameCounter = 0;
+    
+    // Debug flag - set to true to show position markers
+    private final boolean DEBUG_POSITIONING = false;
     
     /**
      * Creates a new sprite on the given sprite layer
@@ -76,28 +80,30 @@ public class GameSprite {
             System.out.println("Error loading sprite images: " + e.getMessage());
             
             // Create a more visible fallback sprite
-            Group fallbackSprite = createFallbackSprite();
+            fallbackSprite = createFallbackSprite();
             
             // Add the fallback sprite to the sprite layer
             spriteLayer.getChildren().add(fallbackSprite);
             
             // Set properties for positioning
-            fallbackSprite.setLayoutX(xPos);
-            fallbackSprite.setLayoutY(yPos);
-            
-            // Return early since we're using the fallback
             xPos = 50;
-            yPos = 300;
+            yPos = 200;
+            updatePosition();
             return;
         }
         
-        // Initial position
-        xPos = 1;
+        // Initial position - consistent starting point
+        xPos = 50;
         yPos = 200;
         updatePosition();
         
         // Add to the sprite layer
         spriteLayer.getChildren().add(spriteView);
+        
+        // Add position debug marker if enabled
+        if (DEBUG_POSITIONING) {
+            addPositionMarker();
+        }
     }
     
     /**
@@ -136,11 +142,18 @@ public class GameSprite {
      */
     public void moveLeft() {
         if (xPos > 0) {
-            xPos -= speed;
+            xPos -= speed * 10; // Increased movement distance
             
             // Set sprite state to running left
             currentState = "runLeft";
-            animateMove();
+            
+            // Make sure we don't go off screen
+            if (xPos < 0) {
+                xPos = 0;
+            }
+            
+            // Move the sprite to new position
+            moveToPosition(xPos, yPos);
         }
     }
     
@@ -148,50 +161,93 @@ public class GameSprite {
      * Move the sprite right
      */
     public void moveRight() {
-        if (xPos < spriteLayer.getWidth() - spriteView.getFitWidth()) {
-            xPos += speed;
+        double maxX = spriteLayer.getWidth() - (spriteView != null ? spriteView.getFitWidth() : 40);
+        if (xPos < maxX) {
+            xPos += speed * 10; // Increased movement distance
             
             // Set sprite state to running right
             currentState = "runRight";
-            animateMove();
+            
+            // Make sure we don't go off screen
+            if (xPos > maxX) {
+                xPos = maxX;
+            }
+            
+            // Move the sprite to new position
+            moveToPosition(xPos, yPos);
         }
     }
     
     /**
-     * Jump action
+     * Jump action with proper animation reset
      */
     public void jump() {
         // Save original y position
-        double originalY = yPos;
+        final double startingY = yPos;
         
         // Set sprite state to jumping
         currentState = "jump";
-        updateAnimation();
         
-        // Jump up
-        TranslateTransition jumpUp = new TranslateTransition(Duration.millis(300), spriteView);
-        jumpUp.setByY(-100);
+        // Ensure we start with the first jump frame
+        if (spriteView != null && jumpImages.length > 0) {
+            spriteView.setImage(jumpImages[0]);
+        }
         
-        // Fall back down
-        TranslateTransition fallDown = new TranslateTransition(Duration.millis(300), spriteView);
-        fallDown.setByY(100);
-        
-        // Execute jump sequence
-        jumpUp.setOnFinished(e -> {
-            // Show second jump frame
-            if (jumpImages.length > 1) {
-                spriteView.setImage(jumpImages[1]);
-            }
-            fallDown.play();
-        });
-        
-        fallDown.setOnFinished(e -> {
-            // Return to idle state
-            currentState = "idle";
-            updateAnimation();
-        });
-        
-        jumpUp.play();
+        if (spriteView != null) {
+            // Cancel any ongoing animations first
+            spriteView.setTranslateY(0);
+            
+            // Jump up animation
+            TranslateTransition jumpUp = new TranslateTransition(Duration.millis(300), spriteView);
+            jumpUp.setByY(-100);
+            
+            // Fall back down animation
+            TranslateTransition fallDown = new TranslateTransition(Duration.millis(300), spriteView);
+            fallDown.setToY(0); // Return to zero translation
+            
+            // Execute jump sequence
+            jumpUp.setOnFinished(e -> {
+                // Show second jump frame
+                if (jumpImages.length > 1) {
+                    spriteView.setImage(jumpImages[1]);
+                }
+                fallDown.play();
+            });
+            
+            fallDown.setOnFinished(e -> {
+                // CRITICAL FIX: Explicitly set back to idle image
+                currentState = "idle";
+                spriteView.setImage(idleImage);
+                
+                // Reset position completely
+                spriteView.setTranslateY(0);
+                spriteView.setLayoutY(startingY);
+                yPos = startingY;
+            });
+            
+            jumpUp.play();
+        }
+        else if (fallbackSprite != null) {
+            // Similar code for fallback sprite
+            fallbackSprite.setTranslateY(0);
+            
+            TranslateTransition jumpUp = new TranslateTransition(Duration.millis(300), fallbackSprite);
+            jumpUp.setByY(-100);
+            
+            TranslateTransition fallDown = new TranslateTransition(Duration.millis(300), fallbackSprite);
+            fallDown.setToY(0);
+            
+            jumpUp.setOnFinished(e -> fallDown.play());
+            
+            fallDown.setOnFinished(e -> {
+                // Reset completely
+                fallbackSprite.setTranslateY(0);
+                fallbackSprite.setLayoutY(startingY);
+                yPos = startingY;
+            });
+            
+            jumpUp.play();
+        }
     }
     
     /**
@@ -201,8 +257,13 @@ public class GameSprite {
         // Create a projectile
         Rectangle projectile = new Rectangle(10, 5);
         projectile.setFill(Color.RED);
-        projectile.setLayoutX(xPos + spriteView.getFitWidth());
-        projectile.setLayoutY(yPos + spriteView.getFitHeight()/2);
+        
+        // Position at the sprite's current position
+        double startX = xPos + (spriteView != null ? spriteView.getFitWidth() : 40);
+        double startY = yPos + (spriteView != null ? spriteView.getFitHeight()/2 : 20);
+        
+        projectile.setX(startX);
+        projectile.setY(startY);
         
         // Add to sprite layer
         spriteLayer.getChildren().add(projectile);
@@ -218,10 +279,8 @@ public class GameSprite {
      * Move back action
      */
     public void moveBack() {
-        if (xPos > 50) {
-            xPos = 50;
-            animateMove();
-        }
+        xPos = 50;
+        moveToPosition(xPos, yPos);
     }
     
     /**
@@ -255,36 +314,73 @@ public class GameSprite {
     }
     
     /**
-     * Animate movement of the sprite
+     * Move sprite to a specific position with animation
      */
-    private void animateMove() {
-        // Skip if using fallback sprite (no spriteView)
-        if (spriteView == null) return;
-        
-        // Move the sprite
-        TranslateTransition move = new TranslateTransition(Duration.millis(100), spriteView);
-        move.setToX(xPos);
-        move.setToY(yPos);
-        
-        move.setOnFinished(e -> {
-            // Return to idle state after movement completes
-            currentState = "idle";
+    private void moveToPosition(double newX, double newY) {
+        if (spriteView != null) {
+            // Reset any translations that might be in effect
+            spriteView.setTranslateX(0);
+            spriteView.setTranslateY(0);
+            
+            // Animate movement
+            TranslateTransition move = new TranslateTransition(Duration.millis(150), spriteView);
+            move.setToX(newX - spriteView.getLayoutX());
+            move.setToY(newY - spriteView.getLayoutY());
+            
+            // After animation completes, update the actual position
+            move.setOnFinished(e -> {
+                spriteView.setLayoutX(newX);
+                spriteView.setLayoutY(newY);
+                spriteView.setTranslateX(0);
+                spriteView.setTranslateY(0);
+                
+                // Return to idle state
+                currentState = "idle";
+                updateAnimation();
+                
+                // Update debug marker if enabled
+                if (DEBUG_POSITIONING) {
+                    updatePositionMarker();
+                }
+            });
+            
+            move.play();
+            
+            // Update animation frame
             updateAnimation();
-        });
-        
-        move.play();
-        
-        // Update animation frame
-        updateAnimation();
+        }
+        else if (fallbackSprite != null) {
+            // Update fallback sprite position directly
+            fallbackSprite.setLayoutX(newX);
+            fallbackSprite.setLayoutY(newY);
+            
+            // Update debug marker if enabled
+            if (DEBUG_POSITIONING) {
+                updatePositionMarker();
+            }
+        }
     }
     
     /**
-     * Update the sprite's position immediately
+     * Update the sprite's position immediately without animation
      */
     private void updatePosition() {
         if (spriteView != null) {
             spriteView.setLayoutX(xPos);
             spriteView.setLayoutY(yPos);
+            spriteView.setTranslateX(0);
+            spriteView.setTranslateY(0);
+        }
+        else if (fallbackSprite != null) {
+            fallbackSprite.setLayoutX(xPos);
+            fallbackSprite.setLayoutY(yPos);
+            fallbackSprite.setTranslateX(0);
+            fallbackSprite.setTranslateY(0);
+        }
+        
+        // Update debug marker if enabled
+        if (DEBUG_POSITIONING) {
+            updatePositionMarker();
         }
     }
     
@@ -319,6 +415,26 @@ public class GameSprite {
                 default:
                     spriteView.setImage(idleImage);
             }
+        }
+    }
+    
+    /* Debug helpers */
+    
+    private Circle positionMarker;
+    
+    private void addPositionMarker() {
+        positionMarker = new Circle(5);
+        positionMarker.setFill(Color.RED);
+        positionMarker.setStroke(Color.BLACK);
+        positionMarker.setCenterX(xPos);
+        positionMarker.setCenterY(yPos);
+        spriteLayer.getChildren().add(positionMarker);
+    }
+    
+    private void updatePositionMarker() {
+        if (positionMarker != null) {
+            positionMarker.setCenterX(xPos);
+            positionMarker.setCenterY(yPos);
         }
     }
 }
