@@ -32,7 +32,7 @@ public abstract class BaseLevel implements Level {
     protected TextArea codeArea;
     protected boolean levelCompleted = false;
     
-    // Standard dimensions for elementss
+    // Standard dimensions for elements
     protected static final int GAME_WIDTH = 800;
     protected static final int GAME_HEIGHT = 400;
     
