@@ -83,8 +83,8 @@ public class LoopsLevel extends BaseLevel {
         // Add goal area (green rectangle)
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(500);
-        goal.setY(350);
+        goal.setX(300);
+        goal.setY(200);
         goal.setOpacity(0.5);
         
         // Add targets
@@ -99,10 +99,10 @@ public class LoopsLevel extends BaseLevel {
             // Create a simple target appearance
             Rectangle targetRect = new Rectangle(30, 30);
             targetRect.setFill(Color.RED);
-            targetRect.setX(350);
-            targetRect.setY(150 + (i * 80));
+            targetRect.setX(200);
+            targetRect.setY(100 + (i * 50));
             
-            gamePane.getChildren().add(targetRect);
+            backgroundLayer.getChildren().add(targetRect);
             targets.add(target);
         }
         
@@ -113,7 +113,8 @@ public class LoopsLevel extends BaseLevel {
         statusText.setFill(Color.BLACK);
         statusText.setFont(Font.font("Arial", 14));
         
-        gamePane.getChildren().add(statusText);
+        backgroundLayer.getChildren().add(goal);
+        foregroundLayer.getChildren().add(statusText);
         
         appendToOutput("Welcome to Level 4: Loops!\nUse a for loop to shoot at all the targets.");
         

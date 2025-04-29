@@ -74,8 +74,8 @@ public class VariablesLevel extends BaseLevel {
         // Add goal area (green rectangle)
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(500);
-        goal.setY(350);
+        goal.setX(200);
+        goal.setY(200);
         goal.setOpacity(0.5);
         
         // Add variable status display
@@ -85,7 +85,8 @@ public class VariablesLevel extends BaseLevel {
         varStatus.setFill(Color.BLACK);
         varStatus.setFont(Font.font("Arial", 14));
         
-        gamePane.getChildren().addAll(goal, varStatus);
+        backgroundLayer.getChildren().add(goal);
+        foregroundLayer.getChildren().add(varStatus);
         
         appendToOutput("Welcome to Level 2: Variables!\nCreate a speed variable and use it to reach the green area.");
         

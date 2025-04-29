@@ -85,16 +85,16 @@ public class ConditionalsLevel extends BaseLevel {
         // Add goal area (green rectangle)
         goal = new Rectangle(100, 50);
         goal.setFill(Color.GREEN);
-        goal.setX(500);
-        goal.setY(350);
+        goal.setX(300);
+        goal.setY(200);
         goal.setOpacity(0.5);
         
         // Add enemy
         enemy = new ImageView();
         enemy.setFitWidth(40);
         enemy.setFitHeight(40);
-        enemy.setLayoutX(300);
-        enemy.setLayoutY(300);
+        enemy.setLayoutX(150);
+        enemy.setLayoutY(200);
         enemy.setStyle("-fx-background-color: red;");
         
         // Add status display
@@ -104,7 +104,9 @@ public class ConditionalsLevel extends BaseLevel {
         statusText.setFill(Color.BLACK);
         statusText.setFont(Font.font("Arial", 14));
         
-        gamePane.getChildren().addAll(goal, enemy, statusText);
+        backgroundLayer.getChildren().add(goal);
+        spriteLayer.getChildren().add(enemy);
+        foregroundLayer.getChildren().add(statusText);
         
         // Set up enemy movement
         setupEnemyMovement();
