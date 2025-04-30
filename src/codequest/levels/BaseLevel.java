@@ -2,6 +2,10 @@ package codequest.levels;
 
 import codequest.GameManager;
 import codequest.GameSprite;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,7 +21,7 @@ import javafx.scene.text.Text;
 
 /**
  * BaseLevel - Common functionality for all level types
- * Fixed layer management while keeping original visual style
+ * Fixed layer management with consistent dimensions
  */
 public abstract class BaseLevel implements Level {
 
@@ -31,9 +35,11 @@ public abstract class BaseLevel implements Level {
     protected TextArea codeArea;
     protected boolean levelCompleted = false;
 
-    // Standard dimensions for elements
-    protected static final int GAME_WIDTH = 800;
-    protected static final int GAME_HEIGHT = 400;
+    // Standard dimensions for elements - changed to match window dimensions
+    protected static final int GAME_WIDTH = 1000; // Increased to match window width
+    protected static final int GAME_HEIGHT = 330; // Reduced height to fit everything
+    protected static final int WINDOW_WIDTH = 1024;
+    protected static final int WINDOW_HEIGHT = 700;
 
     public BaseLevel(GameManager gameManager) {
         this.gameManager = gameManager;
@@ -43,57 +49,93 @@ public abstract class BaseLevel implements Level {
     public Scene createLevelScene() {
         // Create the main layout
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(0)); // Remove padding to eliminate whitespace
+        root.setPrefWidth(WINDOW_WIDTH);
+        root.setPrefHeight(WINDOW_HEIGHT);
         root.setStyle("-fx-background-color: #1e1e2e;"); // Dark background to match screenshot
 
+        // Create main content VBox to better manage vertical space
+        VBox mainContent = new VBox(10); // Added 10px spacing between elements
+        mainContent.setPrefHeight(WINDOW_HEIGHT);
+        mainContent.setMaxHeight(WINDOW_HEIGHT);
+        mainContent.setMinHeight(WINDOW_HEIGHT);
+        mainContent.setAlignment(Pos.TOP_CENTER); // Align to top with no gaps
+        mainContent.setPadding(new Insets(0, 0, 0, 0)); // No padding
+        
         // Top - Level title and instructions
         VBox topBox = createTopSection();
-        root.setTop(topBox);
-
+        topBox.setPrefHeight(100); // Increased height to prevent overlap
+        topBox.setMinHeight(100);
+        topBox.setMaxHeight(100);
+        
         // Center - Game area with layered panes
         setupGameLayers();
-        root.setCenter(gamePane);
-
+        
         // Bottom - Code input and output
         VBox bottomBox = createBottomSection();
-        root.setBottom(bottomBox);
+        bottomBox.setPrefHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110); // Adjusted for increased top height
+        bottomBox.setMinHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110);
+        bottomBox.setMaxHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110);
+        
+        // Add components to the main VBox with proper spacing
+        mainContent.getChildren().addAll(topBox, gamePane, bottomBox);
+        VBox.setVgrow(gamePane, javafx.scene.layout.Priority.NEVER); // Prevent game area from growing
+        VBox.setVgrow(bottomBox, javafx.scene.layout.Priority.ALWAYS); // Allow bottom section to fill space
+        
+        // Add the main VBox to the root with exact fit
+        root.setCenter(mainContent);
 
         // Initialize the sprite on the sprite layer - positioned to match screenshot
         sprite = new GameSprite(spriteLayer);
 
-        return new Scene(root, 800, 700);
+        // Create scene with consistent dimensions
+        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        // Load CSS for consistent styling
+        scene.getStylesheets().add(getClass().getResource("/codequest/assets/styles.css").toExternalForm());
+        
+        return scene;
     }
 
     /**
-     * Setup the game pane with proper layering
+     * Setup the game pane with proper layering and consistent dimensions
      */
     private void setupGameLayers() {
         // Main container pane - will contain all layers
         gamePane = new Pane();
-        gamePane.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-        gamePane.setMaxHeight(GAME_HEIGHT);
+        gamePane.setPrefSize(WINDOW_WIDTH - 20, GAME_HEIGHT); // Use window width minus padding
+        gamePane.setMaxSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        gamePane.setMinSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
         gamePane.setStyle("-fx-background-color: #2c3e50;"); // Dark blue background
 
         // Background layer - for terrain, goal areas, etc.
         backgroundLayer = new Pane();
-        backgroundLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        backgroundLayer.setPrefSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        backgroundLayer.setMaxSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        backgroundLayer.setMinSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
 
         // Sprite layer - for the player character
         spriteLayer = new Pane();
-        spriteLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        spriteLayer.setPrefSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        spriteLayer.setMaxSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        spriteLayer.setMinSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
 
         // Foreground layer - for UI elements, text, etc.
         foregroundLayer = new Pane();
-        foregroundLayer.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        foregroundLayer.setPrefSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        foregroundLayer.setMaxSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
+        foregroundLayer.setMinSize(WINDOW_WIDTH - 20, GAME_HEIGHT);
 
         // Add layers in order (bottom to top)
         gamePane.getChildren().addAll(backgroundLayer, spriteLayer, foregroundLayer);
     }
 
     protected VBox createTopSection() {
-        VBox topBox = new VBox(10);
-        topBox.setPadding(new Insets(10));
+        VBox topBox = new VBox(5); // Reduced spacing
+        topBox.setPadding(new Insets(10, 10, 5, 10)); // Reduced bottom padding
         topBox.setAlignment(Pos.CENTER_LEFT);
+        topBox.setPrefWidth(WINDOW_WIDTH);
+        topBox.setBackground(new Background(new BackgroundFill(
+            Color.web("#1e1e2e"), CornerRadii.EMPTY, Insets.EMPTY)));
 
         Text levelTitle = new Text("Level " + getLevelNumber() + ": " + getLevelName());
         levelTitle.setFont(Font.font("Arial", 24));
@@ -102,7 +144,7 @@ public abstract class BaseLevel implements Level {
         Text instructions = new Text(getLevelInstructions());
         instructions.setFont(Font.font("Arial", 14));
         instructions.setStyle("-fx-fill: #ecf0f1;");
-        instructions.setWrappingWidth(780);
+        instructions.setWrappingWidth(WINDOW_WIDTH - 40); // Account for padding
 
         topBox.getChildren().addAll(levelTitle, instructions);
         return topBox;
@@ -111,12 +153,15 @@ public abstract class BaseLevel implements Level {
     protected VBox createBottomSection() {
         VBox bottomBox = new VBox(10);
         bottomBox.setPadding(new Insets(10));
+        bottomBox.setPrefWidth(WINDOW_WIDTH - 20); // Account for padding
+        bottomBox.setMaxHeight(WINDOW_HEIGHT - GAME_HEIGHT - 100); // Ensure bottom section fits
 
         // Code area - styling to match screenshot
         Label codeLabel = new Label("Your Code:");
         codeLabel.setStyle("-fx-text-fill: white;");
 
         codeArea = new TextArea();
+        // Increased height for better usability
         codeArea.setPrefHeight(100);
         codeArea.setPromptText("Type your code here...");
         codeArea.setText(getStarterCode());
@@ -125,20 +170,21 @@ public abstract class BaseLevel implements Level {
         // Buttons - styling to match screenshot
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(5, 0, 5, 0)); // Reduced vertical padding
 
         Button runButton = new Button("Run Code");
         runButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px;");
-        runButton.setPrefSize(120, 40);
+        runButton.setPrefSize(120, 35); // Adjusted height
         runButton.setOnAction(e -> processCommand(codeArea.getText()));
 
         Button resetButton = new Button("Reset Level");
         resetButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px;");
-        resetButton.setPrefSize(120, 40);
+        resetButton.setPrefSize(120, 35); // Adjusted height
         resetButton.setOnAction(e -> resetLevel());
 
         Button helpButton = new Button("Help");
         helpButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px;");
-        helpButton.setPrefSize(120, 40);
+        helpButton.setPrefSize(120, 35); // Adjusted height
         helpButton.setOnAction(e -> showHelp());
 
         buttonBox.getChildren().addAll(runButton, resetButton, helpButton);
@@ -148,6 +194,7 @@ public abstract class BaseLevel implements Level {
         outputLabel.setStyle("-fx-text-fill: white;");
 
         outputArea = new TextArea();
+        // Increased height for better output visibility
         outputArea.setPrefHeight(100);
         outputArea.setEditable(false);
         outputArea.setStyle("-fx-control-inner-background: #2d3436; -fx-text-fill: #8fbcbb;");

@@ -20,7 +20,7 @@ import javafx.scene.text.Text;
 
 /**
  * VariablesLevel - Level 2: Learning variables
- * Fixed with visible goal area and proper variable display
+ * Fixed with proper dimensions to eliminate white space
  */
 public class VariablesLevel extends BaseLevel {
 
@@ -79,29 +79,37 @@ public class VariablesLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
 
-        // Fix whitespace by filling the entire window
-        gamePane.setPrefWidth(1024); // Match window width
-        gamePane.setMaxWidth(Double.MAX_VALUE);
-        backgroundLayer.setPrefWidth(1024);
-        backgroundLayer.setMaxWidth(Double.MAX_VALUE);
-        spriteLayer.setPrefWidth(1024);
-        spriteLayer.setMaxWidth(Double.MAX_VALUE);
-        foregroundLayer.setPrefWidth(1024);
-        foregroundLayer.setMaxWidth(Double.MAX_VALUE);
+        // Fix dimensions - ensure the game area fills the available space with no white gaps
+        gamePane.setPrefWidth(GAME_WIDTH);
+        gamePane.setPrefHeight(GAME_HEIGHT);
+        gamePane.setMaxHeight(GAME_HEIGHT);
+        gamePane.setMinHeight(GAME_HEIGHT);
+        
+        backgroundLayer.setPrefWidth(GAME_WIDTH);
+        backgroundLayer.setPrefHeight(GAME_HEIGHT);
+        backgroundLayer.setMaxHeight(GAME_HEIGHT);
+        
+        spriteLayer.setPrefWidth(GAME_WIDTH);
+        spriteLayer.setPrefHeight(GAME_HEIGHT);
+        spriteLayer.setMaxHeight(GAME_HEIGHT);
+        
+        foregroundLayer.setPrefWidth(GAME_WIDTH);
+        foregroundLayer.setPrefHeight(GAME_HEIGHT);
+        foregroundLayer.setMaxHeight(GAME_HEIGHT);
 
         // Clear any existing elements
         backgroundLayer.getChildren().clear();
         foregroundLayer.getChildren().clear();
 
-        // Set a proper background for the game area that fills the entire width
-        Rectangle background = new Rectangle(0, 0, 1024, GAME_HEIGHT);
+        // Set a proper background for the game area
+        Rectangle background = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
         background.setFill(Color.web("#2c3e50"));
         backgroundLayer.getChildren().add(background);
 
         // Add edge borders to clearly define the play area
         Rectangle leftBorder = new Rectangle(0, 0, 5, GAME_HEIGHT);
         leftBorder.setFill(Color.web("#1a2639"));
-        Rectangle rightBorder = new Rectangle(1019, 0, 5, GAME_HEIGHT);
+        Rectangle rightBorder = new Rectangle(GAME_WIDTH - 5, 0, 5, GAME_HEIGHT);
         rightBorder.setFill(Color.web("#1a2639"));
         backgroundLayer.getChildren().addAll(leftBorder, rightBorder);
 
