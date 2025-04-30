@@ -10,28 +10,28 @@ import javafx.stage.Stage;
  * Redesigned with improved UI and user experience
  */
 public class Main extends Application {
-    
+
     private GameManager gameManager;
-    
+
     @Override
     public void start(Stage primaryStage) {
         try {
             // Set up application window
             setupStage(primaryStage);
-            
+
             // Initialize the game manager
             gameManager = new GameManager(primaryStage);
-            
+
             // Set up the initial scene
             Scene startScene = gameManager.getStartScene();
             primaryStage.setScene(startScene);
             primaryStage.show();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Configure the primary stage properties
      */
@@ -41,7 +41,7 @@ public class Main extends Application {
         primaryStage.setResizable(true);
         primaryStage.setMinWidth(1024);
         primaryStage.setMinHeight(768);
-        
+
         // Set application icon
         try {
             primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/codequest/assets/app-icon.png")));
@@ -50,7 +50,7 @@ public class Main extends Application {
             // Continue without icon if it can't be loaded
         }
     }
-    
+
     /**
      * Main method to launch the application
      */
