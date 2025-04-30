@@ -6,10 +6,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import codequest.GameManager;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 /**
  * VariablesLevel - Level 2: Learning variables
@@ -72,117 +79,117 @@ public class VariablesLevel extends BaseLevel {
     public Scene createLevelScene() {
         Scene scene = super.createLevelScene();
 
-//        // Fix whitespace by filling the entire window
-//        gamePane.setPrefWidth(1024); // Match window width
-//        gamePane.setMaxWidth(Double.MAX_VALUE);
-//        backgroundLayer.setPrefWidth(1024);
-//        backgroundLayer.setMaxWidth(Double.MAX_VALUE);
-//        spriteLayer.setPrefWidth(1024);
-//        spriteLayer.setMaxWidth(Double.MAX_VALUE);
-//        foregroundLayer.setPrefWidth(1024);
-//        foregroundLayer.setMaxWidth(Double.MAX_VALUE);
-//
-//        // Clear any existing elements
-//        backgroundLayer.getChildren().clear();
-//        foregroundLayer.getChildren().clear();
+        // Fix whitespace by filling the entire window
+        gamePane.setPrefWidth(1024); // Match window width
+        gamePane.setMaxWidth(Double.MAX_VALUE);
+        backgroundLayer.setPrefWidth(1024);
+        backgroundLayer.setMaxWidth(Double.MAX_VALUE);
+        spriteLayer.setPrefWidth(1024);
+        spriteLayer.setMaxWidth(Double.MAX_VALUE);
+        foregroundLayer.setPrefWidth(1024);
+        foregroundLayer.setMaxWidth(Double.MAX_VALUE);
+
+        // Clear any existing elements
+        backgroundLayer.getChildren().clear();
+        foregroundLayer.getChildren().clear();
 
         // Set a proper background for the game area that fills the entire width
-//        Rectangle background = new Rectangle(0, 0, 1024, GAME_HEIGHT);
-//        background.setFill(Color.web("#2c3e50"));
-//        backgroundLayer.getChildren().add(background);
-//
-//        // Add edge borders to clearly define the play area
-//        Rectangle leftBorder = new Rectangle(0, 0, 5, GAME_HEIGHT);
-//        leftBorder.setFill(Color.web("#1a2639"));
-//        Rectangle rightBorder = new Rectangle(1019, 0, 5, GAME_HEIGHT);
-//        rightBorder.setFill(Color.web("#1a2639"));
-//        backgroundLayer.getChildren().addAll(leftBorder, rightBorder);
-//
-//        // Make character sprite visible in a fixed, predictable position
-//        sprite.moveBack(); // Ensure character is at starting position
-//
-//        // Add goal area with proper proportions and position
-//        goal = new Rectangle(120, 80);
-//        goal.setFill(Color.GREEN);
-//        goal.setOpacity(0.7);
-//        goal.setStroke(Color.WHITE);
-//        goal.setStrokeWidth(2);
-//        goal.setX(350);
-//        goal.setY(200);
-//
-//        // Create labeled GOAL text inside the goal
-//        Text goalLabel = new Text("GOAL");
-//        goalLabel.setFill(Color.WHITE);
-//        goalLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-//        goalLabel.setX(goal.getX() + goal.getWidth()/2 - 30);
-//        goalLabel.setY(goal.getY() + goal.getHeight()/2 + 5);
-//
-//        // Add a dotted line path from character to goal
-//        Line pathLine = new Line(
-//            sprite.getXPos() + 40, sprite.getYPos() + 24,
-//            goal.getX() + 10, goal.getY() + goal.getHeight()/2
-//        );
-//        pathLine.setStroke(Color.web("#3498db", 0.7));
-//        pathLine.setStrokeWidth(3);
-//        pathLine.getStrokeDashArray().addAll(10.0, 10.0);
-//
-//        // Add START label near character
-//        Text startLabel = new Text("START");
-//        startLabel.setFill(Color.WHITE);
-//        startLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-//        startLabel.setX(sprite.getXPos() - 5);
-//        startLabel.setY(sprite.getYPos() - 10);
-//
-//        // Create an enhanced variable display box
-//        VBox variableBox = new VBox(10);
-//        variableBox.setLayoutX(120);
-//        variableBox.setLayoutY(100);
-//        variableBox.setPrefWidth(160);
-//        variableBox.setPrefHeight(80);
-//        variableBox.setPadding(new Insets(10));
-//
-//        // Add styling with dark background and rounded corners
-//        variableBox.setStyle(
-//            "-fx-background-color: #1a1b26;" +
-//            "-fx-background-radius: 8px;" +
-//            "-fx-border-color: #4a5568;" +
-//            "-fx-border-width: 1px;" +
-//            "-fx-border-radius: 8px;"
-//        );
-//
-//        // Add drop shadow for depth
-//        DropShadow dropShadow = new DropShadow();
-//        dropShadow.setColor(Color.web("#000000", 0.5));
-//        dropShadow.setRadius(5);
-//        dropShadow.setOffsetY(2);
-//        variableBox.setEffect(dropShadow);
-//
-//        // Add VARIABLES title
-//        Text varTitle = new Text("VARIABLES");
-//        varTitle.setFill(Color.web("#8fbcbb"));
-//        varTitle.setFont(Font.font("Monospace", FontWeight.BOLD, 14));
-//
-//        // Create speed display with monospace font
-//        speedDisplay = new Label("Speed: " + sprite.getSpeed());
-//        speedDisplay.setTextFill(Color.WHITE);
-//        speedDisplay.setFont(Font.font("Monospace", 14));
-//
-//        variableBox.getChildren().addAll(varTitle, speedDisplay);
-//
-//        // Add helpful hint text
-//        Text hint = new Text("Hint: Use a higher speed value to reach the goal faster!");
-//        hint.setFill(Color.LIGHTBLUE);
-//        hint.setFont(Font.font("Arial", 14));
-//        hint.setX(GAME_WIDTH / 2 - 175);
-//        hint.setY(30);
-//
-//        // Add all elements to appropriate layers
-//        backgroundLayer.getChildren().addAll(goal, pathLine);
-//        foregroundLayer.getChildren().addAll(goalLabel, startLabel, variableBox, hint);
-//
-//        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY() +
-//                       " with width:" + goal.getWidth() + ", height:" + goal.getHeight());
-//        appendToOutput("Welcome to Level 2: Variables!\nCreate a speed variable and use it to reach the green area.");
+        Rectangle background = new Rectangle(0, 0, 1024, GAME_HEIGHT);
+        background.setFill(Color.web("#2c3e50"));
+        backgroundLayer.getChildren().add(background);
+
+        // Add edge borders to clearly define the play area
+        Rectangle leftBorder = new Rectangle(0, 0, 5, GAME_HEIGHT);
+        leftBorder.setFill(Color.web("#1a2639"));
+        Rectangle rightBorder = new Rectangle(1019, 0, 5, GAME_HEIGHT);
+        rightBorder.setFill(Color.web("#1a2639"));
+        backgroundLayer.getChildren().addAll(leftBorder, rightBorder);
+
+        // Make character sprite visible in a fixed, predictable position
+        sprite.moveBack(); // Ensure character is at starting position
+
+        // Add goal area with proper proportions and position
+        goal = new Rectangle(120, 80);
+        goal.setFill(Color.GREEN);
+        goal.setOpacity(0.7);
+        goal.setStroke(Color.WHITE);
+        goal.setStrokeWidth(2);
+        goal.setX(350);
+        goal.setY(200);
+
+        // Create labeled GOAL text inside the goal
+        Text goalLabel = new Text("GOAL");
+        goalLabel.setFill(Color.WHITE);
+        goalLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        goalLabel.setX(goal.getX() + goal.getWidth()/2 - 30);
+        goalLabel.setY(goal.getY() + goal.getHeight()/2 + 5);
+
+        // Add a dotted line path from character to goal
+        Line pathLine = new Line(
+            sprite.getXPos() + 40, sprite.getYPos() + 24,
+            goal.getX() + 10, goal.getY() + goal.getHeight()/2
+        );
+        pathLine.setStroke(Color.web("#3498db", 0.7));
+        pathLine.setStrokeWidth(3);
+        pathLine.getStrokeDashArray().addAll(10.0, 10.0);
+
+        // Add START label near character
+        Text startLabel = new Text("START");
+        startLabel.setFill(Color.WHITE);
+        startLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        startLabel.setX(sprite.getXPos() - 5);
+        startLabel.setY(sprite.getYPos() - 10);
+
+        // Create an enhanced variable display box
+        VBox variableBox = new VBox(10);
+        variableBox.setLayoutX(120);
+        variableBox.setLayoutY(100);
+        variableBox.setPrefWidth(160);
+        variableBox.setPrefHeight(80);
+        variableBox.setPadding(new Insets(10));
+
+        // Add styling with dark background and rounded corners
+        variableBox.setStyle(
+            "-fx-background-color: #1a1b26;" +
+            "-fx-background-radius: 8px;" +
+            "-fx-border-color: #4a5568;" +
+            "-fx-border-width: 1px;" +
+            "-fx-border-radius: 8px;"
+        );
+
+        // Add drop shadow for depth
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setColor(Color.web("#000000", 0.5));
+        dropShadow.setRadius(5);
+        dropShadow.setOffsetY(2);
+        variableBox.setEffect(dropShadow);
+
+        // Add VARIABLES title
+        Text varTitle = new Text("VARIABLES");
+        varTitle.setFill(Color.web("#8fbcbb"));
+        varTitle.setFont(Font.font("Monospace", FontWeight.BOLD, 14));
+
+        // Create speed display with monospace font
+        speedDisplay = new Label("Speed: " + sprite.getSpeed());
+        speedDisplay.setTextFill(Color.WHITE);
+        speedDisplay.setFont(Font.font("Monospace", 14));
+
+        variableBox.getChildren().addAll(varTitle, speedDisplay);
+
+        // Add helpful hint text
+        Text hint = new Text("Hint: Use a higher speed value to reach the goal faster!");
+        hint.setFill(Color.LIGHTBLUE);
+        hint.setFont(Font.font("Arial", 14));
+        hint.setX(GAME_WIDTH / 2 - 175);
+        hint.setY(30);
+
+        // Add all elements to appropriate layers
+        backgroundLayer.getChildren().addAll(goal, pathLine);
+        foregroundLayer.getChildren().addAll(goalLabel, startLabel, variableBox, hint);
+
+        appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY() +
+                       " with width:" + goal.getWidth() + ", height:" + goal.getHeight());
+        appendToOutput("Welcome to Level 2: Variables!\nCreate a speed variable and use it to reach the green area.");
 
         return scene;
     }
