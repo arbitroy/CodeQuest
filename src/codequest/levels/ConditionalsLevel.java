@@ -11,7 +11,6 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -24,10 +23,11 @@ import javafx.util.Duration;
 public class ConditionalsLevel extends BaseLevel {
 
     private Rectangle goal;
-    private ImageView enemy;
+    private Rectangle enemy; // Changed from ImageView to Rectangle
     private boolean enemyNear = false;
     private Map<String, Object> variables = new HashMap<>();
     private boolean usedConditional = false;
+    private boolean handledEnemyCorrectly = false; // Added as class field
     private Timeline enemyTimeline;
     private Random random = new Random();
 
@@ -90,13 +90,11 @@ public class ConditionalsLevel extends BaseLevel {
         goal.setY(200);
         goal.setOpacity(0.8);
 
-        // Add enemy
-        enemy = new ImageView();
-        enemy.setFitWidth(40);
-        enemy.setFitHeight(40);
-        enemy.setLayoutX(150);
-        enemy.setLayoutY(200);
-        enemy.setStyle("-fx-background-color: red;");
+        // Add enemy - changed to Rectangle for visibility
+        enemy = new Rectangle(40, 40);
+        enemy.setFill(Color.RED);
+        enemy.setX(150);
+        enemy.setY(200);
 
         // Add status display
         Text statusText = new Text("Enemy Near: " + enemyNear);
@@ -118,18 +116,31 @@ public class ConditionalsLevel extends BaseLevel {
         return scene;
     }
 
+    // Movement pattern counter
+    private int movePatternStep = 0;
+    
     private void setupEnemyMovement() {
-        // Create a timeline for enemy movement
+        // Create a timeline for enemy movement with a predictable pattern
         enemyTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(2), event -> {
-                // Randomly move the enemy closer or farther
-                if (random.nextBoolean()) {
-                    enemy.setLayoutX(300); // Far position
-                    enemyNear = false;
-                } else {
-                    enemy.setLayoutX(200); // Near position
-                    enemyNear = true;
+            new KeyFrame(Duration.seconds(1), event -> {
+                // Use a predictable pattern instead of random:
+                // Pattern: Far, Near, Far, Far, Near
+                switch (movePatternStep) {
+                    case 0: // Far
+                    case 2: // Far
+                    case 3: // Far
+                        enemy.setX(700); // Far position
+                        enemyNear = false;
+                        break;
+                    case 1: // Near
+                    case 4: // Near
+                        enemy.setX(200); // Near position
+                        enemyNear = true;
+                        break;
                 }
+                
+                // Increment pattern step and loop back to start
+                movePatternStep = (movePatternStep + 1) % 5;
 
                 // Update the status display
                 updateStatusDisplay();
@@ -154,8 +165,7 @@ public class ConditionalsLevel extends BaseLevel {
     public void processCommand(String command) {
         appendToOutput("\n--- Running your code ---");
 
-        // Track if the character moved back when enemy was near
-        boolean handledEnemyCorrectly = false;
+        // No local handledEnemyCorrectly variable anymore, using class field
 
         // Check for if statement pattern
         Pattern ifPattern = Pattern.compile("if\\s*\\(\\s*(\\w+)\\s*(?:==\\s*true)?\\s*\\)\\s*\\{([^}]*)\\}");
@@ -175,7 +185,7 @@ public class ConditionalsLevel extends BaseLevel {
                     if (ifBody.contains("moveBack()")) {
                         appendToOutput("Executing: moveBack()");
                         sprite.moveBack();
-                        handledEnemyCorrectly = true;
+                        handledEnemyCorrectly = true; // This now persists between runs
                         usedConditional = true;
                     }
                 } else {
@@ -193,11 +203,11 @@ public class ConditionalsLevel extends BaseLevel {
             sprite.moveRight();
         }
 
-        // Check if the level is completed
-        checkLevelCompletion(handledEnemyCorrectly);
+        // Check if the level is completed - no parameter needed
+        checkLevelCompletion();
     }
 
-    private void checkLevelCompletion(boolean handledEnemyCorrectly) {
+    private void checkLevelCompletion() {
         // Check if sprite reached the goal and handled the enemy correctly
         if (sprite.getXPos() >= goal.getX() &&
             sprite.getXPos() <= goal.getX() + goal.getWidth() &&
@@ -218,9 +228,12 @@ public class ConditionalsLevel extends BaseLevel {
         // Reset state
         enemyNear = false;
         usedConditional = false;
+        handledEnemyCorrectly = false; // Reset this flag too
+        movePatternStep = 0; // Reset pattern to start from beginning
 
         // Restart enemy movement
         if (enemyTimeline != null) {
+            enemyTimeline.stop(); // Stop first to clear any existing timelines
             enemyTimeline.play();
         }
 

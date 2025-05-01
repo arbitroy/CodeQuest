@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import codequest.GameManager;
 import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -15,13 +14,15 @@ import javafx.scene.text.Text;
 
 /**
  * LoopsLevel - Level 4: Learning loops
+ * Fixed with automatic targeting and proper display updates
  */
 public class LoopsLevel extends BaseLevel {
 
     private Rectangle goal;
-    private List<ImageView> targets = new ArrayList<>();
+    private List<Rectangle> targets = new ArrayList<>(); // Changed to Rectangle for consistency
     private int targetsHit = 0;
     private boolean usedLoop = false;
+    private Text statusText; // Store reference to status text for easier updates
 
     public LoopsLevel(GameManager gameManager) {
         super(gameManager);
@@ -41,7 +42,8 @@ public class LoopsLevel extends BaseLevel {
     protected String getLevelInstructions() {
         return "You're doing great! Now let's learn about loops.\n" +
                "Loops let you repeat actions multiple times without writing the same code over and over.\n" +
-               "Your goal: Use a for loop to shoot at all the targets, then reach the green area.";
+               "Your goal: Use a for loop to shoot at all the targets, then reach the green area.\n" +
+               "(Don't worry about aiming - your shots will automatically hit the targets in order)";
     }
 
     @Override
@@ -71,7 +73,8 @@ public class LoopsLevel extends BaseLevel {
                "2. Check if i < 3 (if true, run the code inside)\n" +
                "3. After running the code, add 1 to i (i++)\n" +
                "4. Repeat steps 2-3 until i is not less than 3\n\n" +
-               "In this level, use a loop to shoot at all 3 targets.";
+               "In this level, use a loop to shoot at all 3 targets.\n" +
+               "Your shots will automatically hit targets in sequence - no need to aim.";
     }
 
     @Override
@@ -85,28 +88,19 @@ public class LoopsLevel extends BaseLevel {
         goal.setY(200);
         goal.setOpacity(0.8);
 
-        // Add targets as ImageView objects to match the expected List<ImageView> type
+        // Add targets as Rectangles (not ImageViews) for consistency
         for (int i = 0; i < 3; i++) {
-            // Create ImageView instead of Rectangle to match List type
-            ImageView target = new ImageView();
-            target.setFitWidth(30);
-            target.setFitHeight(30);
-            target.setLayoutX(200 + (i * 100)); // Spread across the visible area
-            target.setLayoutY(100 + (i * 50));  // At different heights
-
-            // Create a red rectangle as a placeholder for the target image
-            Rectangle targetVisual = new Rectangle(30, 30);
-            targetVisual.setFill(Color.RED);
-            targetVisual.setX(200 + (i * 100));
-            targetVisual.setY(100 + (i * 50));
-
-            backgroundLayer.getChildren().add(targetVisual);
-            spriteLayer.getChildren().add(target);
-            targets.add(target); // Now this works because target is an ImageView
+            Rectangle target = new Rectangle(30, 30);
+            target.setFill(Color.RED);
+            target.setX(200 + (i * 100)); // Spread across the visible area
+            target.setY(100 + (i * 50));  // At different heights
+            
+            backgroundLayer.getChildren().add(target);
+            targets.add(target);
         }
 
-        // Add status display
-        Text statusText = new Text("Targets Hit: 0/3");
+        // Add status display and store reference
+        statusText = new Text("Targets Hit: 0/3");
         statusText.setX(20);
         statusText.setY(50);
         statusText.setFill(Color.WHITE);
@@ -117,6 +111,7 @@ public class LoopsLevel extends BaseLevel {
 
         appendToOutput("DEBUG: Goal placed at X:" + goal.getX() + ", Y:" + goal.getY());
         appendToOutput("Welcome to Level 4: Loops!\nUse a for loop to shoot at all the targets.");
+        appendToOutput("Your shots will automatically hit targets in sequence.");
 
         return scene;
     }
@@ -180,34 +175,29 @@ public class LoopsLevel extends BaseLevel {
         appendToOutput("Executing: shoot()");
         sprite.shoot();
 
-        // Check for target hits
+        // Check for target hits - automatic targeting system
         if (targetsHit < targets.size()) {
-            // Simulate hitting a target
-            Rectangle target = (Rectangle) gamePane.getChildren().stream()
-                    .filter(node -> node instanceof Rectangle)
-                    .filter(node -> ((Rectangle) node).getFill() == Color.RED)
-                    .findFirst()
-                    .orElse(null);
-
-            if (target != null) {
-                // Mark target as hit
-                targetsHit++;
-                target.setFill(Color.GRAY);
-
-                // Update status display
-                updateStatusDisplay();
-            }
+            // Always hit the next target in sequence
+            Rectangle target = targets.get(targetsHit);
+            
+            // Mark target as hit
+            targetsHit++;
+            target.setFill(Color.GRAY);
+            
+            // Update status directly
+            updateStatusDisplay();
+            
+            appendToOutput("Target " + targetsHit + " hit!");
+        } else {
+            appendToOutput("No more targets to hit!");
         }
     }
 
     private void updateStatusDisplay() {
-        // Find and update the text node
-        gamePane.getChildren().stream()
-                .filter(node -> node instanceof Text)
-                .map(node -> (Text) node)
-                .filter(text -> text.getText().startsWith("Targets Hit"))
-                .findFirst()
-                .ifPresent(text -> text.setText("Targets Hit: " + targetsHit + "/3"));
+        // Update status directly using the stored reference
+        if (statusText != null) {
+            statusText.setText("Targets Hit: " + targetsHit + "/3");
+        }
     }
 
     private void checkLevelCompletion() {
@@ -229,11 +219,9 @@ public class LoopsLevel extends BaseLevel {
         usedLoop = false;
 
         // Reset target visuals
-        gamePane.getChildren().stream()
-                .filter(node -> node instanceof Rectangle)
-                .map(node -> (Rectangle) node)
-                .filter(rect -> rect.getWidth() == 30 && rect.getHeight() == 30)
-                .forEach(rect -> rect.setFill(Color.RED));
+        for (Rectangle target : targets) {
+            target.setFill(Color.RED);
+        }
 
         // Update status display
         updateStatusDisplay();

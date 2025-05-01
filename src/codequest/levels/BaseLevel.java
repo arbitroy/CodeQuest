@@ -73,9 +73,9 @@ public abstract class BaseLevel implements Level {
         
         // Bottom - Code input and output
         VBox bottomBox = createBottomSection();
-        bottomBox.setPrefHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110); // Adjusted for increased top height
-        bottomBox.setMinHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110);
-        bottomBox.setMaxHeight(WINDOW_HEIGHT - GAME_HEIGHT - 110);
+        bottomBox.setPrefHeight(WINDOW_HEIGHT - GAME_HEIGHT - 100); // Adjusted for increased top height
+        bottomBox.setMinHeight(WINDOW_HEIGHT - GAME_HEIGHT - 100);
+        bottomBox.setMaxHeight(WINDOW_HEIGHT - GAME_HEIGHT - 100);
         
         // Add components to the main VBox with proper spacing
         mainContent.getChildren().addAll(topBox, gamePane, bottomBox);
@@ -162,7 +162,7 @@ public abstract class BaseLevel implements Level {
 
         codeArea = new TextArea();
         // Increased height for better usability
-        codeArea.setPrefHeight(100);
+        codeArea.setPrefHeight(150);
         codeArea.setPromptText("Type your code here...");
         codeArea.setText(getStarterCode());
         codeArea.setStyle("-fx-control-inner-background: #2d3436; -fx-text-fill: #dfe6e9;");
@@ -195,7 +195,7 @@ public abstract class BaseLevel implements Level {
 
         outputArea = new TextArea();
         // Increased height for better output visibility
-        outputArea.setPrefHeight(100);
+        outputArea.setPrefHeight(150);
         outputArea.setEditable(false);
         outputArea.setStyle("-fx-control-inner-background: #2d3436; -fx-text-fill: #8fbcbb;");
 
