@@ -396,8 +396,7 @@ public class GameSprite {
         // Advance frame counter
         frameCounter++;
 
-        // Only update animation every FRAME_DELAY frames for smoother animation
-        if (frameCounter >= FRAME_DELAY) {
+
             frameCounter = 0;
             currentFrame = (currentFrame + 1) % 8; // 8 frames for running animations
 
@@ -417,7 +416,6 @@ public class GameSprite {
                 default:
                     spriteView.setImage(idleImage);
             }
-        }
     }
 
     /* Debug helpers */
